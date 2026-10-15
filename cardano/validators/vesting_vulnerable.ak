@@ -257,16 +257,16 @@ test v2_owner_recupera_los_fondos_pasa() {
 // empieza ANTES del deadline (10_000). Pista: `tx_unlock` arma todo lo demás;
 // elegí el rango con `interval.between`. ¿Y con `interval.everything`?
 test poc_unlock_antes_del_deadline_se_aprueba() {
-  let pendiente: Bool = todo @"consigna 2: la tx que retira antes de tiempo"
-  pendiente
-}
+  
+  can_unlock(make_datum(),
+  script_input_ref(0) ,
+  tx_unlock([beneficiary_hash], interval.between(deadline_ms - 1, deadline_ms + 1)))
+  }
 
 // TODO: una tx de Cancel firmada por `atacante_hash`, que no es el owner, y que
 // el validator aprueba igual. Mirá qué compara `can_cancel` y contra qué.
 test poc_cualquiera_se_lleva_los_fondos() {
-  let pendiente: Bool =
-    todo @"consigna 2: la tx con la que un extranio se lleva los fondos"
-  pendiente
+  can_cancel(atacante_hash, tx_cancel([atacante_hash]))
 }
 
 // ---------------------------------------------------------------------------
@@ -292,13 +292,12 @@ fn rango_que_empieza_antes() -> Fuzzer<interval.Interval> {
 test prop_unlock_rechaza_todo_rango_que_empieza_antes(
   rango via rango_que_empieza_antes(),
 ) {
-  let pendiente: Bool = todo @"consigna 3: la propiedad del tiempo"
-  pendiente
+  !can_unlock(make_datum(),script_input_ref(0), tx_unlock([beneficiary_hash], rango))
 }
 
 // TODO: para toda firma que no es la del owner, Cancel rechaza.
 // Ojo: el generador puede producir justo `owner_hash`; ese caso no cuenta.
 test prop_solo_el_owner_recupera(signer via fuzz.bytearray()) {
-  let pendiente: Bool = todo @"consigna 3: la propiedad del owner"
-  pendiente
-}
+  signer == owner_hash ||
+  !can_cancel(signer, tx_cancel([signer]))
+  }

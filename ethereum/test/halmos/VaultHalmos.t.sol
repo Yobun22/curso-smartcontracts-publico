@@ -47,6 +47,7 @@ interface IVault {
 // lo que el handler sabe hacer rompe la propiedad", nada mas.
 contract AtacanteUnaVez {
     IVault public vault;
+    
 
     constructor(IVault _vault) {
         vault = _vault;
@@ -56,6 +57,7 @@ contract AtacanteUnaVez {
     }
 
     receive() external payable {
+
     }
 }
 
